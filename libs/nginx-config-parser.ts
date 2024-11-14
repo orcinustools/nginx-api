@@ -146,7 +146,7 @@ export class Parser {
    * Converts a config string into a JS object
    */
   private toJSON(conf: string, options: ParserOptions = {}): ConfigObject {
-    const lines = conf.replace('\t', '').split('\n');
+    const lines = conf.toString().replace('\t', '').split('\n');
     const json: ConfigObject = {};
     let parent = '';
     let chunkedLine: string | null = null;
@@ -192,8 +192,10 @@ export class Parser {
             parent += '.' + (this.resolve(json, parent) as any[]).length - 1;
             countOfParentsThatAreArrays += 1;
           }
-        } else if (line.startsWith('include') && options.parseIncludes) {
-          this.handleInclude(line, json, parent, options);
+        } else if (line.startsWith('include') && options.parseIncludes) {          
+          // this.handleInclude(line, json, parent, options);
+          this.handleInclude(line, json, parent, { ignoreIncludeErrors: true, includesRoot: '/etc/nginx' });
+
         } else if (line.endsWith(';')) {
           this.handlePropertyLine(line, json, parent);
           chunkedLine = null;
@@ -229,35 +231,53 @@ export class Parser {
     parent: string, 
     options: ParserOptions
   ): Promise<void> {
+    // Resolve path based on serverRoot, options, or current working directory
     const findFiles = resolve(
       this.serverRoot || options.includesRoot || Deno.cwd(),
       line.replace('include ', '').replace(';', '').trim()
     );
-
+  
+    console.log("Searching for files at:", findFiles);
+  
     const files: string[] = [];
-    for await (const file of expandGlob(findFiles)) {
-      files.push(file.path);
+    try {
+      for await (const file of expandGlob(findFiles)) {
+        files.push(file.path);
+      }
+    } catch (error) {
+      console.error("Error expanding glob:", error);
     }
-
+  
+    // Check if no files were found in the directory
+    if (files.length === 0) {
+      console.warn(`No configuration files found in directory: ${findFiles}`);
+  
+      // Exit early if no files are found and ignoreIncludeErrors is true
+      if (options.ignoreIncludeErrors) {
+        console.log("Ignoring missing include files as per configuration.");
+        return;
+      } else {
+        throw new IncludeResolutionError(
+          `Unable to resolve include statement: "${line}".\nSearched in ${
+            this.serverRoot || options.includesRoot || Deno.cwd()
+          }`
+        );
+      }
+    }
+  
+    // Process each found file
     for (const file of files) {
       const parser = new Parser();
       parser.serverRoot = this.serverRoot;
       const config = await parser.readConfigFile(file);
-
+  
       for (const [key, val] of Object.entries(config)) {
         this.appendValue(json, key, val, parent);
       }
     }
-
-    if (!files.length && !options.ignoreIncludeErrors) {
-      throw new IncludeResolutionError(
-        `Unable to resolve include statement: "${line}".\nSearched in ${
-          this.serverRoot || options.includesRoot || Deno.cwd()
-        }`
-      );
-    }
-  }
-
+  }  
+  
+  
   /**
    * Handle property lines in config
    */
