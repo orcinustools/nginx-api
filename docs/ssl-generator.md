@@ -18,7 +18,7 @@ chmod +x tools/ssl-generator.ts tools/challenge-server.ts
 
 #### Usage
 ```bash
-deno run --allow-read --allow-write --allow-net tools/ssl-generator.ts [options]
+luwak tools/ssl-generator.ts [options]
 
 Options:
   -d, --domain <domain>    Domain name to generate certificate for
@@ -32,7 +32,7 @@ Options:
 
 1. **Generate Certificate for Single Domain**
 ```bash
-deno run --allow-read --allow-write --allow-net tools/ssl-generator.ts \
+luwak tools/ssl-generator.ts \
   --domain example.com \
   --email admin@example.com \
   --output /etc/nginx/ssl
@@ -40,7 +40,7 @@ deno run --allow-read --allow-write --allow-net tools/ssl-generator.ts \
 
 2. **Test with Staging Environment**
 ```bash
-deno run --allow-read --allow-write --allow-net tools/ssl-generator.ts \
+luwak tools/ssl-generator.ts \
   --domain example.com \
   --email admin@example.com \
   --staging
@@ -89,7 +89,7 @@ ssl_protocols TLSv1.2 TLSv1.3;
 3. **Troubleshooting**
    ```bash
    # Test with staging first
-   deno run --allow-read --allow-write --allow-net tools/ssl-generator.ts \
+   luwak tools/ssl-generator.ts \
      --domain example.com \
      --email admin@example.com \
      --staging
