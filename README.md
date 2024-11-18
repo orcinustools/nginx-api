@@ -25,7 +25,7 @@ curl -o- https://raw.githubusercontent.com/graphteon/luwak/main/install.sh | bas
 luwak https://github.com/orcinustools/nginx-api/blob/main/main.ts
 ```
 
-The server will start on http://localhost:3000
+The server will start on http://localhost:3005
 
 ## API Endpoints
 
