@@ -15,14 +15,14 @@ A Orcinus API for generating Nginx configuration files with support for template
 
 ## Quick Start
 
-1. Install Deno:
+1. Install Luwak:
 ```bash
-
+curl -o- https://raw.githubusercontent.com/graphteon/luwak/main/install.sh | bash
 ```
 
 2. Run the server:
 ```bash
-
+luwak https://github.com/orcinustools/nginx-api/blob/main/main.ts
 ```
 
 The server will start on http://localhost:3000
